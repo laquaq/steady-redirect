@@ -3,77 +3,115 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Steady Starry Night — Ask</title>
 <style>
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:#fafafa;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif}
   main{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .card{max-width:640px;width:100%;border:1px solid #eee;border-radius:16px;padding:24px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
-  h1{font-size:20px;margin:0 0 8px}
-  p{font-size:18px;line-height:1.6;margin:12px 0 0;word-break:keep-all}
-  .meta{opacity:.6;font-size:14px;margin-top:10px}
-  .btns{margin-top:16px;display:flex;gap:8px}
-  button{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fafafa;cursor:pointer}
+  .card{width:100%;max-width:720px;background:#fff;border:1px solid #eee;border-radius:16px;padding:28px;box-shadow:0 8px 28px rgba(0,0,0,.06)}
+  h1{margin:0 0 8px;font-size:20px;font-weight:700}
+  #q{font-size:20px;line-height:1.7;margin:12px 0 4px;word-break:keep-all}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  button{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#f7f7f7;cursor:pointer;font-size:14px}
+  button:active{transform:translateY(1px)}
+  .meta{opacity:.6;font-size:13px;margin-top:6px}
 </style>
+
 <main>
   <div class="card">
     <h1>✨ 오늘의 질문</h1>
     <p id="q">불러오는 중…</p>
-    <div class="meta" id="cat"></div>
-    <div class="btns">
-      <button onclick="loadRandom()">다시 뽑기</button>
-      <button onclick="location.reload()">새로고침</button>
+    <div class="row">
+      <button id="again">다시 뽑기</button>
+      <button id="share">질문 복사/공유</button>
     </div>
+    <div class="meta">/ask 페이지는 Google Sheets CSV에서 무작위로 1개를 불러옵니다.</div>
   </div>
 </main>
 
 <script>
-  // ① 여기를 네 '웹에 게시된 CSV 링크'로 바꿔주세요!
-  const CSV_URL = "<<<YOUR_GOOGLE_SHEETS_PUBLISHED_CSV_URL>>>";
+  // ✅ 공개된 Google Sheets CSV (Question 컬럼만 있어도 됨)
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSomhMVou4ceevX5Z4I9CfhA7o1jKNw_oFuimodzuRvcZjc3M_bR_jdD7pkXXwT-hueaneC0p61aDje/pub?gid=1707499206&single=true&output=csv";
 
-  // ② (선택) 카테고리 필터: /ask?cat=감정
-  const params = new URLSearchParams(location.search);
-  const wantCat = params.get("cat");
-
-  async function fetchCSV(url){
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-    return parseCSV(text);
-  }
-
-  // 아주 단순한 CSV 파서 (따옴표/콤마 최소 가정)
+  // --- 안정적 CSV 파서 (따옴표/콤마 처리) ---
   function parseCSV(text){
-    const lines = text.trim().split(/\r?\n/);
-    const headers = lines[0].split(",").map(h=>h.trim());
-    const rows = lines.slice(1).map(line=>{
-      const cols = line.split(",").map(c=>c.trim().replace(/^"|"$/g,""));
-      const obj = {};
-      headers.forEach((h,i)=> obj[h] = cols[i] || "");
-      return obj;
-    });
-    return rows;
+    const rows=[], cur=[]; let cell="", q=false;
+    const pushCell=()=>{ cur.push(cell); cell=""; };
+    const pushRow=()=>{ rows.push(cur.slice()); cur.length=0; };
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(q){
+        if(ch==='"'){
+          if(text[i+1]==='"'){ cell+='"'; i++; }
+          else q=false;
+        } else cell+=ch;
+      }else{
+        if(ch==='"') q=true;
+        else if(ch===',') pushCell();
+        else if(ch==='\n'){ pushCell(); pushRow(); }
+        else if(ch!=='\r') cell+=ch;
+      }
+    }
+    if(cell.length||cur.length){ pushCell(); pushRow(); }
+    return rows.filter(r=>r.some(c=>(c||"").trim()!==""));
   }
 
-  let DATA = [];
+  function toObjects(rows){
+    if(!rows.length) return [];
+    const headers = rows[0].map(h=>h.replace(/^\uFEFF/,'').trim());
+    return rows.slice(1).map(r=>{
+      const o={}; headers.forEach((h,i)=>o[h]=(r[i]??"").trim()); return o;
+    });
+  }
+
+  // 헤더 자동 탐지: 'Question/질문' 우선, 없으면 "텍스트가 가장 많은 컬럼"을 질문으로 사용
+  function pickQuestionKey(headers, data){
+    const Q_CAND = ["Question","질문","question","내용","text"];
+    let idx = headers.findIndex(h=>Q_CAND.includes(h) || Q_CAND.includes(h.toLowerCase()));
+    if(idx>=0) return headers[idx];
+    // fallback: 내용이 가장 많은 컬럼
+    let best = 0, bestKey = headers[0]||"";
+    headers.forEach(h=>{
+      const count = data.filter(row => (row[h]||"").trim()).length;
+      if(count>best){ best=count; bestKey=h; }
+    });
+    return bestKey;
+  }
+
+  let DATA=[], QKEY="";
 
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
 
   function render(item){
-    document.getElementById("q").textContent = item?.Question || "(질문 없음)";
-    document.getElementById("cat").textContent = item?.Category ? `#${item.Category}` : "";
+    document.getElementById("q").textContent = item || "(질문 없음)";
   }
 
   function loadRandom(){
     if(!DATA.length){ render(null); return; }
-    const pool = wantCat ? DATA.filter(r => r.Category === wantCat) : DATA;
-    render(pick(pool.length ? pool : DATA));
+    render(pick(DATA));
   }
 
   (async () => {
     try{
-      DATA = await fetchCSV(CSV_URL);
-      loadRandom();
+      const res = await fetch(CSV_URL, { cache:"no-store" });
+      const text = await res.text();
+      const rows = parseCSV(text);
+      const objs = toObjects(rows);
+      if(!objs.length) throw new Error("CSV empty");
+      const headers = Object.keys(objs[0]);
+      QKEY = pickQuestionKey(headers, objs);
+      DATA = objs.map(o => (o[QKEY]||"").trim()).filter(Boolean);
     }catch(e){
-      // 실패 시 간단한 예비 풀
-      DATA = [{Question:"오늘 하루를 별에 비유한다면?",Category:"감정"}];
-      loadRandom();
+      console.warn("[ASK] fallback:", e);
+      DATA = ["오늘 하루를 별에 비유한다면?"];
     }
+    loadRandom();
   })();
+
+  document.getElementById("again").addEventListener("click", loadRandom);
+  document.getElementById("share").addEventListener("click", async () => {
+    const q = document.getElementById("q").textContent.trim();
+    const txt = `⭐ Steady Starry Night — 오늘의 질문\n\n${q}`;
+    if(navigator.share){ try{ await navigator.share({ text: txt }); return; }catch{} }
+    try{ await navigator.clipboard.writeText(txt); alert("질문이 복사되었어요!"); }
+    catch{ alert("복사/공유를 지원하지 않는 환경입니다."); }
+  });
 </script>
