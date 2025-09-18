@@ -8,8 +8,17 @@
     margin:0;
     background:#2A2B2D;
     color:#fff;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;
+    font-family:'MapoFlowerIsland', sans-serif;
   }
+
+  /* Mapo 꽃섬 폰트 */
+  @font-face {
+    font-family: 'MapoFlowerIsland';
+    src: url('/ask/MapoFlowerIsland.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+
   main{
     min-height:100svh;
     display:flex;
@@ -67,6 +76,7 @@
     color:#fff;
     cursor:pointer;
     font-size:14px;
+    font-family:'MapoFlowerIsland', sans-serif;
   }
   button:active{ transform:translateY(1px); }
   .meta{
@@ -75,18 +85,13 @@
     margin-top:14px;
     color:#ddd;
   }
-
-  /* (선택) 아이콘을 흰색처럼 보이게 하고 싶다면, 아래 필터를 시도해볼 수 있어요.
-     다만 색감을 100% 정확히 흰색으로 만들진 못할 수 있어 주석 처리해둡니다.
-     .title .icon img{ filter: brightness(0) invert(1); }
-  */
 </style>
 
 <main>
   <div class="card">
     <div class="title">
       <span class="icon">
-        <!-- 새 SVG 파일을 /ask/30px.svg 로 업로드해 주세요 -->
+        <!-- SVG 아이콘 -->
         <img src="/ask/30px.svg" alt="별 아이콘">
       </span>
       <h1>오늘의 별무리</h1>
