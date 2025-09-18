@@ -25,7 +25,7 @@
         display: grid;
         /* 가운데 정렬 → 위쪽 중앙 정렬 */
         place-content: start center;
-        padding-top: 24px; /* 제목을 더 위로 */
+        padding-top: 16px; /* 제목을 더 위로 */
       }
       .wrap {
         width: 100%;
@@ -52,11 +52,12 @@
       }
       .link {
         display: inline-block;
-        margin-top: 16px;
-        font-size: 16px;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        transition: opacity 160ms ease;
+  margin-top: 16px;
+  font-size: 16px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 160ms ease;
+  color: #3F3C3C; /* ✅ 링크 색상 고정 */
       }
       .link:hover { opacity: 0.8; }
       .link:focus { outline: 2px dashed currentColor; outline-offset: 3px; }
