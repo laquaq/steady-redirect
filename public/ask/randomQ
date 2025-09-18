@@ -1,0 +1,125 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Steady Starry Night — Ask</title>
+<style>
+  :root { --card-w: 720px; }
+  * { box-sizing: border-box; }
+  body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif; background:#fafafa;}
+  main{ min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .card{ width:100%; max-width:var(--card-w); background:#fff; border:1px solid #eee; border-radius:16px; padding:28px; box-shadow:0 8px 28px rgba(0,0,0,.06);}
+  h1{ margin:0 0 6px; font-size:20px; font-weight:700; letter-spacing:.2px;}
+  #q{ font-size:20px; line-height:1.7; margin:12px 0 4px; word-break:keep-all; }
+  .meta{ opacity:.6; font-size:14px; margin-top:6px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
+  button{ padding:10px 14px; border-radius:10px; border:1px solid #ddd; background:#f7f7f7; cursor:pointer; font-size:14px; }
+  button:active{ transform:translateY(1px); }
+</style>
+
+<main>
+  <div class="card">
+    <h1>✨ 오늘의 질문</h1>
+    <p id="q">불러오는 중…</p>
+    <div class="meta" id="cat"></div>
+    <div class="row">
+      <button id="again">다시 뽑기</button>
+      <button id="share">질문 복사/공유</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ✅ 공개된 Google Sheets CSV (너가 준 URL)
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSomhMVou4ceevX5Z4I9CfhA7o1jKNw_oFuimodzuRvcZjc3M_bR_jdD7pkXXwT-hueaneC0p61aDje/pub?gid=2024625464&single=true&output=csv";
+
+  // ➕ /ask?cat=감정 처럼 카테고리 필터 가능
+  const params = new URLSearchParams(location.search);
+  const wantCat = params.get("cat");
+
+  // CSV 파서 (따옴표/콤마 안전 처리)
+  function parseCSV(text){
+    const rows = [];
+    let i = 0, cur = [], cell = "", inQuotes = false;
+    const pushCell = () => { cur.push(cell); cell=""; };
+    const pushRow  = () => { rows.push(cur); cur=[]; };
+
+    while(i < text.length){
+      const ch = text[i];
+      if(inQuotes){
+        if(ch === '"'){
+          if(text[i+1] === '"'){ cell += '"'; i+=2; continue; } // 이스케이프된 따옴표
+          inQuotes = false; i++; continue;
+        } else { cell += ch; i++; continue; }
+      } else {
+        if(ch === '"'){ inQuotes = true; i++; continue; }
+        if(ch === ','){ pushCell(); i++; continue; }
+        if(ch === '\r'){ i++; continue; }
+        if(ch === '\n'){ pushCell(); pushRow(); i++; continue; }
+        cell += ch; i++;
+      }
+    }
+    // 마지막 셀/행
+    if(cell.length || cur.length){ pushCell(); pushRow(); }
+
+    return rows;
+  }
+
+  function toObjects(rows){
+    if(!rows.length) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1).map(r => {
+      const obj = {};
+      headers.forEach((h,idx) => obj[h] = (r[idx] ?? "").trim());
+      return obj;
+    });
+  }
+
+  // 다양한 헤더 이름을 지원 (영문/국문)
+  function normalizeRecord(rec){
+    const q = rec.Question || rec.질문 || rec.question || rec.Q || rec["Question (Title)"] || "";
+    const c = rec.Category || rec.카테고리 || rec.category || rec["카테고리 (Select)"] || "";
+    return { Question: q, Category: c };
+  }
+
+  let DATA = [];
+
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+
+  function render(item){
+    const qEl = document.getElementById("q");
+    const cEl = document.getElementById("cat");
+    if(!item){ qEl.textContent = "(질문 없음)"; cEl.textContent=""; return; }
+    qEl.textContent = item.Question || "(질문 없음)";
+    cEl.textContent = item.Category ? `#${item.Category}` : "";
+  }
+
+  function loadRandom(){
+    const base = wantCat ? DATA.filter(d => (d.Category||"") === wantCat) : DATA;
+    const pool = base.length ? base : DATA;
+    render(pick(pool));
+  }
+
+  async function boot(){
+    try{
+      const res = await fetch(CSV_URL, { cache: "no-store" });
+      const text = await res.text();
+      const rows = parseCSV(text).filter(r => r.length && r.some(x=>x && x.trim()!== ""));
+      const objs = toObjects(rows).map(normalizeRecord).filter(o => o.Question);
+      DATA = objs;
+    }catch(e){
+      DATA = [{ Question:"오늘 하루를 별에 비유한다면?", Category:"감정" }];
+    }
+    loadRandom();
+  }
+
+  document.getElementById("again").addEventListener("click", loadRandom);
+  document.getElementById("share").addEventListener("click", async () => {
+    const q = document.getElementById("q").textContent.trim();
+    const t = `⭐ Steady Starry Night — 오늘의 질문\n\n${q}`;
+    if(navigator.share){ try { await navigator.share({ text: t }); return; } catch(_){} }
+    try { await navigator.clipboard.writeText(t); alert("질문이 복사되었어요!"); }
+    catch(_) { alert("복사/공유를 지원하지 않는 환경입니다."); }
+  });
+
+  boot();
+</script>
