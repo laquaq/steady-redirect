@@ -1,0 +1,79 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Steady Starry Night — Ask</title>
+<style>
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  main{min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:640px;width:100%;border:1px solid #eee;border-radius:16px;padding:24px;box-shadow:0 6px 20px rgba(0,0,0,.06)}
+  h1{font-size:20px;margin:0 0 8px}
+  p{font-size:18px;line-height:1.6;margin:12px 0 0;word-break:keep-all}
+  .meta{opacity:.6;font-size:14px;margin-top:10px}
+  .btns{margin-top:16px;display:flex;gap:8px}
+  button{padding:10px 14px;border-radius:10px;border:1px solid #ddd;background:#fafafa;cursor:pointer}
+</style>
+<main>
+  <div class="card">
+    <h1>✨ 오늘의 질문</h1>
+    <p id="q">불러오는 중…</p>
+    <div class="meta" id="cat"></div>
+    <div class="btns">
+      <button onclick="loadRandom()">다시 뽑기</button>
+      <button onclick="location.reload()">새로고침</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  // ① 여기를 네 '웹에 게시된 CSV 링크'로 바꿔주세요!
+  const CSV_URL = "<<<YOUR_GOOGLE_SHEETS_PUBLISHED_CSV_URL>>>";
+
+  // ② (선택) 카테고리 필터: /ask?cat=감정
+  const params = new URLSearchParams(location.search);
+  const wantCat = params.get("cat");
+
+  async function fetchCSV(url){
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+    return parseCSV(text);
+  }
+
+  // 아주 단순한 CSV 파서 (따옴표/콤마 최소 가정)
+  function parseCSV(text){
+    const lines = text.trim().split(/\r?\n/);
+    const headers = lines[0].split(",").map(h=>h.trim());
+    const rows = lines.slice(1).map(line=>{
+      const cols = line.split(",").map(c=>c.trim().replace(/^"|"$/g,""));
+      const obj = {};
+      headers.forEach((h,i)=> obj[h] = cols[i] || "");
+      return obj;
+    });
+    return rows;
+  }
+
+  let DATA = [];
+
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+
+  function render(item){
+    document.getElementById("q").textContent = item?.Question || "(질문 없음)";
+    document.getElementById("cat").textContent = item?.Category ? `#${item.Category}` : "";
+  }
+
+  function loadRandom(){
+    if(!DATA.length){ render(null); return; }
+    const pool = wantCat ? DATA.filter(r => r.Category === wantCat) : DATA;
+    render(pick(pool.length ? pool : DATA));
+  }
+
+  (async () => {
+    try{
+      DATA = await fetchCSV(CSV_URL);
+      loadRandom();
+    }catch(e){
+      // 실패 시 간단한 예비 풀
+      DATA = [{Question:"오늘 하루를 별에 비유한다면?",Category:"감정"}];
+      loadRandom();
+    }
+  })();
+</script>
