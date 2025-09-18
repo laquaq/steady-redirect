@@ -4,11 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>별 접는 방법 | steady starry night</title>
-    <!-- 폰트 로드: 프로젝트 내 경로에 맞게 수정하세요 -->
     <style>
       @font-face {
         font-family: 'MapoFlowerIsland';
-        src: url('/MapoFlowerIsland.woff2') format('woff2'); /* 예: /public/fonts/ */
+        src: url('/MapoFlowerIsland.woff2') format('woff2');
         font-weight: normal;
         font-style: normal;
         font-display: swap;
@@ -17,25 +16,25 @@
         --bg: #F6F5F5;
         --fg: #3F3C3C;
       }
-      html, body {
-        height: 100%;
-      }
+      html, body { height: 100%; }
       body {
         margin: 0;
         background: var(--bg);
         color: var(--fg);
         font-family: 'MapoFlowerIsland', system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
         display: grid;
-        place-items: center;
+        /* 가운데 정렬 → 위쪽 중앙 정렬 */
+        place-content: start center;
+        padding-top: 24px; /* 제목을 더 위로 */
       }
       .wrap {
         width: 100%;
-        max-width: 720px;
-        padding: 56px 20px 40px;
-        text-align: center; /* 가운데 정렬 */
+        max-width: 800px;      /* 720 → 800 */
+        padding: 40px 20px 40px; /* 상단 패딩 살짝 줄여 위로 당김 */
+        text-align: center;
       }
       h1 {
-        margin: 0 0 24px;
+        margin: 0 0 20px;       /* 살짝 타이트하게 */
         font-size: clamp(28px, 6vw, 48px);
         line-height: 1.1;
         letter-spacing: 0.02em;
@@ -43,8 +42,8 @@
       .figure {
         display: block;
         margin: 0 auto 16px;
-        width: min(100%, 640px);
-        aspect-ratio: 4/3; /* 필요 시 제거. SVG 비율에 맞춰 자동 조정됨 */
+        width: min(100%, 760px); /* 640 → 760로 확대 */
+        /* SVG는 자체 비율이 좋아서 aspect-ratio는 제거 */
       }
       .hint {
         margin-top: 8px;
@@ -55,7 +54,7 @@
         display: inline-block;
         margin-top: 16px;
         font-size: 16px;
-        text-decoration: underline; /* 밑줄 */
+        text-decoration: underline;
         text-underline-offset: 3px;
         transition: opacity 160ms ease;
       }
@@ -67,12 +66,13 @@
     <main class="wrap" role="main">
       <h1>별 접는 방법</h1>
 
-      <!-- 텍스트 없는 SVG 파일 표시: 경로를 프로젝트에 맞게 교체하세요 -->
+      <!-- 텍스트 없는 SVG 파일 -->
       <img class="figure" src="/star-howto.svg" alt="별 접는 순서도" />
 
-      <!-- 작은 글씨 링크: 실제 유튜브 튜토리얼 링크로 교체하세요 -->
       <p class="hint">
-        <a class="link" href="https://www.youtube.com/watch?v=Bc3Ch33MvPw?si=L0i1QONjl-a7L4JL" target="_blank" rel="noopener noreferrer">
+        <a class="link"
+           href="https://www.youtube.com/watch?v=Bc3Ch33MvPw&si=L0i1QONjl-a7L4JL"
+           target="_blank" rel="noopener noreferrer">
           영상 튜토리얼 보러가기
         </a>
       </p>
