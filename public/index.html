@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>steady starry night — 준비중입니다</title>
+  <style>
+    /* Mapo 꽃섬 폰트 (파일 위치에 맞춰 경로만 맞게 수정) */
+    @font-face {
+      font-family: 'MapoFlowerIsland';
+      src: url('/ask/MapoFlowerIsland.woff2') format('woff2'); /* 예: /ask 폴더에 둔 경우 */
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root { --bg:#2A2B2D; --fg:#FFFFFF; }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'MapoFlowerIsland', system-ui, -apple-system, "Noto Sans KR", sans-serif;
+      display: grid;
+      place-items: center; /* 가로세로 정중앙 */
+      padding: 24px;
+    }
+
+    .card {
+      text-align: center;
+    }
+    .icon {
+      width: 56px;   /* 아이콘 크기 원하는 대로 조절 */
+      height: 56px;
+      margin: 0 auto 16px;
+    }
+    .icon img, .icon svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(20px, 5vw, 28px);
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    p {
+      margin: 0;
+      font-size: clamp(16px, 3.5vw, 18px);
+      opacity: .9;
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-label="준비중 페이지">
+    <div class="icon">
+      <!-- ⬇️ 여기를 네 아이콘 SVG/PNG 경로로 교체하세요 -->
+      <img src="/symbol_1.svg" alt="steady starry night 아이콘" />
+    </div>
+    <h1>준비중입니다</h1>
+    <p>곧 초대할게요 ✦</p>
+  </main>
+</body>
+</html>
