@@ -23,18 +23,17 @@
         color: var(--fg);
         font-family: 'MapoFlowerIsland', system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
         display: grid;
-        /* 가운데 정렬 → 위쪽 중앙 정렬 */
         place-content: start center;
-        padding-top: 16px; /* 제목을 더 위로 */
+        padding-top: 16px;
       }
       .wrap {
         width: 100%;
-        max-width: 800px;      /* 720 → 800 */
-        padding: 40px 20px 40px; /* 상단 패딩 살짝 줄여 위로 당김 */
+        max-width: 800px;
+        padding: 40px 20px 40px;
         text-align: center;
       }
       h1 {
-        margin: 0 0 50px;       /* 살짝 타이트하게 */
+        margin: 0 0 50px;
         font-size: clamp(28px, 6vw, 48px);
         line-height: 1.1;
         letter-spacing: 0.02em;
@@ -42,25 +41,8 @@
       .figure {
         display: block;
         margin: 0 auto 16px;
-        width: min(100%, 760px); /* 640 → 760로 확대 */
-        /* SVG는 자체 비율이 좋아서 aspect-ratio는 제거 */
+        width: min(100%, 760px);
       }
-      .hint {
-        margin-top: 8px;
-        font-size: 14px;
-        opacity: 0.9;
-      }
-      .link {
-        display: inline-block;
-  margin-top: 40px;
-  font-size: 16px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  transition: opacity 160ms ease;
-  color: #3F3C3C; /* ✅ 링크 색상 고정 */
-      }
-      .link:hover { opacity: 0.8; }
-      .link:focus { outline: 2px dashed currentColor; outline-offset: 3px; }
     </style>
   </head>
   <body>
@@ -69,14 +51,6 @@
 
       <!-- 텍스트 없는 SVG 파일 -->
       <img class="figure" src="/howto_2.svg" alt="별 접는 순서도" />
-
-      <p class="hint">
-        <a class="link"
-           href="https://www.youtube.com/watch?v=Bc3Ch33MvPw&si=L0i1QONjl-a7L4JL"
-           target="_blank" rel="noopener noreferrer">
-          영상 튜토리얼 보러가기
-        </a>
-      </p>
     </main>
   </body>
 </html>
